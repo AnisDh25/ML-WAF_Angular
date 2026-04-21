@@ -1,225 +1,295 @@
-# ML-WAF Angular Migration
+# ML-WAF (Machine Learning Web Application Firewall)
 
-This project is a modern Angular frontend migration of the original Flask-based ML-WAF (Machine Learning Web Application Firewall) dashboard.
+A comprehensive Web Application Firewall with machine learning capabilities, featuring an Angular frontend and Python Flask backend.
 
-## Project Structure
+## 🚀 Features
 
-```
-mlwaf-angular/
-|-- backend/                 # Flask API-only backend
-|   |-- api.py              # Main API server
-|   |-- *.py                # Original WAF modules
-|   |-- config.json         # WAF configuration
-|   |-- requirements.txt    # Python dependencies
-|   |-- models/             # ML model files
-|
-|-- frontend/               # Angular frontend
-|   |-- src/
-|   |   |-- app/
-|   |   |   |-- components/
-|   |   |   |   |-- login/      # Login component
-|   |   |   |   |-- dashboard/  # Main dashboard
-|   |   |   |-- services/
-|   |   |   |   |-- api.service.ts  # API service
-|   |   |   |-- guards/
-|   |   |   |   |-- auth.guard.ts   # Authentication guard
-|   |   |   |-- app.routes.ts       # App routing
-|   |   |   |-- app.ts              # App component
-|   |   |-- styles.scss             # Global styles
-|   |   |-- index.html
-|   |-- package.json
-|   |-- angular.json
-|
-|-- README.md
+- **Machine Learning Protection**: Advanced ML models for threat detection
+- **Real-time Monitoring**: Live dashboard with system statistics
+- **User Management**: Role-based access control (Admin, IT-Responsible, User)
+- **Content Filtering**: Configurable content categories and blacklists
+- **Popup Blocking**: Intelligent popup and ad blocking
+- **Attack Detection**: SQL Injection, XSS, CSRF, and more
+- **Modern UI**: Responsive Angular frontend with real-time updates
+- **Database Integration**: MySQL with proper data management
+
+## 📋 Prerequisites
+
+- **Python 3.8+**
+- **Node.js 16+** and **npm**
+- **MySQL 8.0+**
+- **Git**
+
+## 🛠️ Installation & Setup
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/AnisDh25/ML-WAF_Angular.git
+cd ML-WAF_Angular
 ```
 
-## Features
+### 2. Backend Setup
 
-### Backend (Flask API)
-- **RESTful API**: Complete API-only backend serving JSON endpoints
-- **Authentication**: Token-based authentication system
-- **CORS Support**: Enabled for Angular frontend
-- **Endpoints**:
-  - `/api/auth/*` - Authentication endpoints
-  - `/api/stats` - Dashboard statistics
-  - `/api/logs` - Request logs and search
-  - `/api/alerts` - Security alerts
-  - `/api/config` - Configuration management
-  - `/api/chart/*` - Chart data endpoints
-  - `/api/proxy/*` - Proxy management
-  - `/api/status` - System status
-
-### Frontend (Angular)
-- **Modern UI**: Built with Angular 17+ and Bootstrap 5
-- **Responsive Design**: Mobile-friendly interface
-- **Real-time Updates**: Auto-refreshing dashboard data
-- **Interactive Charts**: Traffic and attack visualization
-- **Authentication**: Secure login/logout functionality
-- **Components**:
-  - **Login**: User authentication interface
-  - **Dashboard**: Main monitoring dashboard with:
-    - Statistics cards with animations
-    - Real-time traffic charts
-    - Attack type distribution
-    - Recent activity feed
-    - Top blocked IPs table
-    - System status indicators
-
-## Getting Started
-
-### Prerequisites
-- Node.js 18+ and npm
-- Python 3.8+
-- PostgreSQL (optional, falls back to SQLite)
-
-### Backend Setup
-
-1. Navigate to the backend directory:
+#### Install Python Dependencies
 ```bash
 cd backend
-```
-
-2. Create a virtual environment:
-```bash
-python -m venv venv
-venv\Scripts\activate  # On Windows
-```
-
-3. Install dependencies:
-```bash
 pip install -r requirements.txt
 ```
 
-4. Start the API server:
+#### Configure MySQL Database
+```bash
+# Create database
+mysql -u root -p
+CREATE DATABASE waf_database;
+CREATE USER 'waf_user'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON waf_database.* TO 'waf_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+#### Environment Variables (Optional)
+Create `.env` file in `backend/` directory:
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=waf_database
+DB_USER=waf_user
+DB_PASSWORD=your_password
+```
+
+#### Initialize Database
+```bash
+python init_mysql.py
+```
+
+#### Start Backend Server
 ```bash
 python api.py
 ```
+Backend will run on `http://localhost:5000`
 
-The API will be available at `http://localhost:5000`
+### 3. Frontend Setup
 
-### Frontend Setup
-
-1. Navigate to the frontend directory:
+#### Install Node.js Dependencies
 ```bash
 cd frontend
-```
-
-2. Install dependencies:
-```bash
 npm install
 ```
 
-3. Start the development server:
+#### Start Angular Development Server
 ```bash
 ng serve
 ```
+Frontend will run on `http://localhost:4200`
 
-The Angular app will be available at `http://localhost:4200`
+## 🔧 Configuration
 
-## Usage
-
-1. Start both the backend and frontend servers
-2. Open `http://localhost:4200` in your browser
-3. Login with your WAF credentials
-4. Monitor the real-time dashboard
-
-## Configuration
-
-- Backend configuration is in `backend/config.json`
-- ML models should be placed in `backend/models/`
-- Default API port: 5000
-- Default Angular port: 4200
-
-## API Documentation
-
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `GET /api/auth/profile` - Get user profile
-- `POST /api/auth/change_password` - Change password
-
-### Dashboard
-- `GET /api/stats` - Get dashboard statistics
-- `GET /api/logs` - Get request logs
-- `GET /api/alerts` - Get security alerts
-- `GET /api/status` - Get system status
-
-### Configuration
-- `GET /api/config` - Get current configuration
-- `POST /api/config/update` - Update configuration
-- `POST /api/content_filter/category/{action}` - Enable/disable content filter categories
-- `POST /api/content_filter/blacklist` - Add to blacklist
-- `DELETE /api/content_filter/blacklist` - Remove from blacklist
-
-### Charts
-- `GET /api/chart/traffic` - Get traffic chart data
-- `GET /api/chart/attacks` - Get attack distribution data
-
-### Proxy Management
-- `POST /api/proxy/start` - Start WAF proxy
-- `POST /api/proxy/stop` - Stop WAF proxy
-
-## Development
-
-### Adding New Components
-
-1. Generate a new standalone component:
-```bash
-ng generate component components/new-component --standalone
+### Backend Configuration
+Edit `backend/config.json` for WAF settings:
+```json
+{
+  "proxy": {
+    "host": "localhost",
+    "port": 8080
+  },
+  "ml_classifier": {
+    "threshold": 0.7
+  },
+  "content_filter": {
+    "enabled": true,
+    "categories": ["adult", "gambling", "social"]
+  }
+}
 ```
 
-2. Add routing in `app.routes.ts`
-3. Implement API calls in `api.service.ts`
-4. Add guards if authentication is required
+### Frontend Configuration
+Edit `frontend/src/app/services/api.service.ts` to change API endpoint:
+```typescript
+private apiUrl = 'http://localhost:5000/api';
+```
 
-### Styling
+## 🚦 Default Credentials
 
-- Global styles in `src/styles.scss`
-- Component-specific styles in component SCSS files
-- Uses Bootstrap 5 for responsive layout
-- FontAwesome 6 for icons
+- **Username**: `admin`
+- **Password**: `admin123`
+- **Role**: Administrator
 
-## Original vs Migrated Features
+## 📊 Features Overview
 
-| Feature | Original (Flask) | Migrated (Angular) |
-|---------|------------------|-------------------|
-| Authentication | Session-based | Token-based |
-| UI Updates | Page reloads | Real-time updates |
-| Charts | Chart.js (server) | Chart.js (client) |
-| Mobile Support | Limited | Fully responsive |
-| Performance | Server-rendered | SPA with lazy loading |
-| State Management | Flask sessions | Angular services |
+### Dashboard
+- Real-time statistics (requests, blocks, threats)
+- Traffic overview charts
+- Attack type distribution
+- Top blocked IPs
+- System health monitoring
 
-## Security Notes
+### User Management
+- Create, edit, delete users
+- Role-based permissions
+- Password management
+- Activity tracking
 
-- Change the default secret key in `api.py`
-- Use HTTPS in production
-- Implement proper token expiration
-- Add rate limiting to API endpoints
-- Validate all user inputs
+### WAF Settings
+- ML model configuration
+- Content filter rules
+- Popup blocker settings
+- Blacklist/whitelist management
 
-## Troubleshooting
+### System Status
+- Service health monitoring
+- Resource usage (CPU, Memory, Disk)
+- Database status
+- Network statistics
+
+## 🔒 Security Features
+
+### ML-Based Detection
+- SQL Injection detection
+- XSS attack prevention
+- CSRF protection
+- Path traversal detection
+- Command injection blocking
+
+### Content Filtering
+- Category-based filtering
+- URL blacklisting
+- Domain whitelisting
+- Custom filter rules
+
+### Popup Blocking
+- Aggressive popup blocking
+- Ad filtering
+- Script blocking options
+
+## 🗂️ Project Structure
+
+```
+ML-WAF_Angular/
+├── backend/
+│   ├── api.py              # Main Flask API server
+│   ├── auth.py             # Authentication module
+│   ├── dashboard.py         # Dashboard data provider
+│   ├── ml_waf.py          # Core WAF logic
+│   ├── database_config.py   # Database configuration
+│   ├── init_mysql.py       # Database initialization
+│   ├── requirements.txt     # Python dependencies
+│   └── models/            # ML models directory
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── components/ # Angular components
+│   │   │   ├── services/    # API services
+│   │   │   └── guards/     # Route guards
+│   ├── package.json        # Node.js dependencies
+│   └── angular.json        # Angular configuration
+└── README.md
+```
+
+## 🚀 Deployment
+
+### Production Deployment (Backend)
+```bash
+cd backend
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 api:app
+```
+
+### Production Deployment (Frontend)
+```bash
+cd frontend
+npm run build
+# Deploy dist/ folder to web server
+```
+
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **CORS Errors**: Ensure the Flask API has CORS enabled
-2. **Authentication Failures**: Check token storage and API headers
-3. **Chart Loading**: Verify Chart.js and ng2-charts are properly installed
-4. **Database Connection**: Ensure PostgreSQL is running or SQLite fallback is working
+1. **Database Connection Error**
+   - Check MySQL service is running
+   - Verify credentials in `.env` file
+   - Ensure database exists
 
-### Debug Mode
+2. **Frontend API Connection Error**
+   - Verify backend is running on port 5000
+   - Check CORS configuration
+   - Ensure API endpoint URL is correct
 
-- Backend: Set `debug=True` in `api.py`
-- Frontend: Use browser developer tools for network requests
+3. **ML Model Loading Error**
+   - Check models directory exists
+   - Verify model files are not corrupted
+   - Check scikit-learn version compatibility
 
-## Contributing
+4. **Permission Issues**
+   - Run with appropriate permissions
+   - Check file permissions for models directory
+   - Verify database user privileges
+
+### Logs
+- Backend logs: `backend/logs/`
+- Frontend logs: Browser console
+- Database logs: MySQL error log
+
+## 📝 Development
+
+### Adding New ML Models
+1. Train model using `train_model.py`
+2. Save to `backend/models/`
+3. Update `waf_predictor.py` to load new model
+
+### Adding New API Endpoints
+1. Add route in `api.py`
+2. Implement logic in respective module
+3. Update frontend service if needed
+
+### Frontend Development
+```bash
+cd frontend
+ng generate component component-name
+ng serve --configuration development
+```
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
 
-## License
+## 📄 License
 
-This project maintains the same license as the original ML-WAF project.
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 📞 Support
+
+For issues and questions:
+- Create an issue on GitHub
+- Check troubleshooting section
+- Review logs for error details
+
+## 🔗 Technologies Used
+
+### Backend
+- **Flask** - Web framework
+- **MySQL** - Database
+- **SQLAlchemy** - ORM
+- **Scikit-learn** - Machine learning
+- **Pandas** - Data manipulation
+- **NumPy** - Numerical computing
+
+### Frontend
+- **Angular** - Frontend framework
+- **TypeScript** - Type-safe JavaScript
+- **Chart.js** - Data visualization
+- **Bootstrap** - UI framework
+- **RxJS** - Reactive programming
+
+### DevOps
+- **Git** - Version control
+- **npm** - Package management
+- **Gunicorn** - WSGI server
+
+---
+
+**⚡ Protect your web applications with intelligent, machine learning-powered security!**
