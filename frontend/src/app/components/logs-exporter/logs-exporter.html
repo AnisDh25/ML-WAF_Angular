@@ -1,0 +1,154 @@
+<div class="logs-exporter">
+  <div class="page-header">
+    <h2><i class="fas fa-file-export me-2"></i>Logs Exporter</h2>
+    <p class="text-muted">Export and filter WAF logs for analysis</p>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5><i class="fas fa-filter me-2"></i>Filters</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-3">
+          <label for="dateFrom" class="form-label">From Date</label>
+          <input type="datetime-local" class="form-control" id="dateFrom" [(ngModel)]="dateFrom">
+        </div>
+        <div class="col-md-3">
+          <label for="dateTo" class="form-label">To Date</label>
+          <input type="datetime-local" class="form-control" id="dateTo" [(ngModel)]="dateTo">
+        </div>
+        <div class="col-md-2">
+          <label for="ipAddress" class="form-label">IP Address</label>
+          <input type="text" class="form-control" id="ipAddress" [(ngModel)]="ipAddress" placeholder="e.g., 192.168.1.1">
+        </div>
+        <div class="col-md-2">
+          <label for="decision" class="form-label">Decision</label>
+          <select class="form-select" id="decision" [(ngModel)]="decision">
+            <option value="all">All</option>
+            <option value="allowed">Allowed</option>
+            <option value="blocked">Blocked</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="method" class="form-label">Method</label>
+          <select class="form-select" id="method" [(ngModel)]="method">
+            <option value="all">All</option>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12">
+          <button class="btn btn-primary me-2" (click)="applyFilters()">
+            <i class="fas fa-search me-2"></i>Apply Filters
+          </button>
+          <button class="btn btn-secondary" (click)="clearFilters()">
+            <i class="fas fa-times me-2"></i>Clear Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Options -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5><i class="fas fa-download me-2"></i>Export Options</h5>
+    </div>
+    <div class="card-body">
+      <div class="row align-items-end">
+        <div class="col-md-3">
+          <label for="exportFormat" class="form-label">Export Format</label>
+          <select class="form-select" id="exportFormat" [(ngModel)]="exportFormat">
+            <option value="csv">CSV</option>
+            <option value="json">JSON</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="maxRecords" class="form-label">Max Records</label>
+          <input type="number" class="form-control" id="maxRecords" [(ngModel)]="maxRecords" min="1" max="10000">
+        </div>
+        <div class="col-md-3">
+          <div class="form-label">Records Found</div>
+          <div class="badge bg-info">{{ filteredLogs.length }}</div>
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-success" (click)="exportLogs()" [disabled]="filteredLogs.length === 0">
+            <i class="fas fa-download me-2"></i>Export Logs
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Table -->
+  <div class="card">
+    <div class="card-header">
+      <h5><i class="fas fa-list me-2"></i>Logs Preview</h5>
+    </div>
+    <div class="card-body">
+      <div *ngIf="isLoading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      
+      <div *ngIf="!isLoading && filteredLogs.length === 0" class="text-center py-4">
+        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+        <p class="text-muted">No logs found matching the current filters.</p>
+      </div>
+      
+      <div *ngIf="!isLoading && filteredLogs.length > 0" class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Timestamp</th>
+              <th>IP Address</th>
+              <th>Method</th>
+              <th>URL</th>
+              <th>Decision</th>
+              <th>Risk Score</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of filteredLogs.slice(0, 100)">
+              <td>{{ log.timestamp | date:'short' }}</td>
+              <td><code>{{ log.ip }}</code></td>
+              <td>
+                <span class="badge" [class]="'bg-' + getMethodBadgeClass(log.method)">
+                  {{ log.method }}
+                </span>
+              </td>
+              <td class="text-truncate" style="max-width: 200px;" title="{{ log.url }}">
+                {{ log.url }}
+              </td>
+              <td>
+                <span class="badge" [class]="'bg-' + getDecisionBadgeClass(log.decision)">
+                  {{ log.decision }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="log.ml_score" class="badge" [class]="'bg-' + getRiskBadgeClass(log.ml_score)">
+                  {{ (log.ml_score * 100).toFixed(1) }}%
+                </span>
+                <span *ngIf="!log.ml_score" class="text-muted">-</span>
+              </td>
+              <td class="text-truncate" style="max-width: 150px;" title="{{ log.reason }}">
+                {{ log.reason || '-' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="filteredLogs.length > 100" class="text-center mt-3">
+          <p class="text-muted">Showing first 100 records of {{ filteredLogs.length }} total records</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

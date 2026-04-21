@@ -1,0 +1,209 @@
+<div class="system-status">
+  <div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2><i class="fas fa-server me-2"></i>System Status</h2>
+      <p class="text-muted">Real-time system monitoring and performance metrics</p>
+      <div class="d-flex align-items-center gap-2 mt-1">
+        <small class="text-muted">
+          <i class="fas fa-sync me-1"></i>
+          Last sync: <span class="fw-semibold">{{ getSyncStatusText() }}</span>
+        </small>
+        <div class="spinner-border spinner-border-sm text-success" 
+             *ngIf="isSyncing" 
+             title="Syncing...">
+          <span class="visually-hidden">Syncing...</span>
+        </div>
+        <i class="fas fa-check-circle text-success" 
+           *ngIf="!isSyncing && lastSyncTime" 
+           title="Data synchronized"></i>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" (click)="refreshSystemStatus()" title="Refresh system status">
+        <i class="fas fa-sync-alt me-1"></i>Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading system status...</p>
+  </div>
+
+  <!-- System Status Content -->
+  <div *ngIf="!isLoading" class="system-status-content">
+    <!-- System Overview Cards -->
+    <div class="row g-4 mb-4">
+      <!-- CPU Status -->
+      <div class="col-md-3">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="card-title mb-0">CPU Usage</h6>
+              <span class="badge" [class]="'bg-' + getCpuStatusClass(systemStatus.cpu.usage)">
+                {{ systemStatus.cpu.usage.toFixed(1) }}%
+              </span>
+            </div>
+            <div class="progress mb-2" style="height: 8px;">
+              <div class="progress-bar" 
+                   [class]="'bg-' + getCpuStatusClass(systemStatus.cpu.usage)"
+                   [style.width]="systemStatus.cpu.usage + '%'"></div>
+            </div>
+            <div class="small text-muted">
+              <div>Cores: {{ systemStatus.cpu.cores }}</div>
+              <div>Temp: {{ systemStatus.cpu.temperature.toFixed(1) }}°C</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memory Status -->
+      <div class="col-md-3">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="card-title mb-0">Memory</h6>
+              <span class="badge" [class]="'bg-' + getMemoryStatusClass(systemStatus.memory.percentage)">
+                {{ systemStatus.memory.percentage }}%
+              </span>
+            </div>
+            <div class="progress mb-2" style="height: 8px;">
+              <div class="progress-bar" 
+                   [class]="'bg-' + getMemoryStatusClass(systemStatus.memory.percentage)"
+                   [style.width]="systemStatus.memory.percentage + '%'"></div>
+            </div>
+            <div class="small text-muted">
+              <div>Used: {{ formatBytes(systemStatus.memory.used * 1024 * 1024) }}</div>
+              <div>Total: {{ formatBytes(systemStatus.memory.total * 1024 * 1024) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disk Status -->
+      <div class="col-md-3">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="card-title mb-0">Disk Usage</h6>
+              <span class="badge" [class]="'bg-' + getDiskStatusClass(systemStatus.disk.percentage)">
+                {{ systemStatus.disk.percentage }}%
+              </span>
+            </div>
+            <div class="progress mb-2" style="height: 8px;">
+              <div class="progress-bar" 
+                   [class]="'bg-' + getDiskStatusClass(systemStatus.disk.percentage)"
+                   [style.width]="systemStatus.disk.percentage + '%'"></div>
+            </div>
+            <div class="small text-muted">
+              <div>Used: {{ systemStatus.disk.used }} GB</div>
+              <div>Total: {{ systemStatus.disk.total }} GB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Network Status -->
+      <div class="col-md-3">
+        <div class="card">
+          <div class="card-body">
+            <h6 class="card-title mb-2">Network</h6>
+            <div class="small text-muted">
+              <div class="d-flex justify-content-between">
+                <span>In:</span>
+                <span>{{ formatBytes(systemStatus.network.bytesIn) }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Out:</span>
+                <span>{{ formatBytes(systemStatus.network.bytesOut) }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Packets In:</span>
+                <span>{{ systemStatus.network.packetsIn.toLocaleString() }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Packets Out:</span>
+                <span>{{ systemStatus.network.packetsOut.toLocaleString() }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Services Status -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-cogs me-2"></i>Services Status
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Status</th>
+                <th>Uptime</th>
+                <th>Memory Usage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let service of systemStatus.services | keyvalue">
+                <td>
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-server me-2"></i>
+                    {{ service.key || getServiceDisplayName(service.key) }}
+                  </div>
+                </td>
+                <td>
+                  <span class="badge" [class]="'bg-' + getServiceStatusClass(service.value.status)">
+                    <i class="fas fa-circle me-1"></i>
+                    {{ service.value.status }}
+                  </span>
+                </td>
+                <td>{{ service.value.uptime }}</td>
+                <td>{{ service.value.memory }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Database Status -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">
+          <i class="fas fa-database me-2"></i>Database Status
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="text-center">
+              <h3 class="text-primary">{{ systemStatus.database.connections }}</h3>
+              <p class="text-muted">Active Connections</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center">
+              <h3 class="text-info">{{ systemStatus.database.uptime }}</h3>
+              <p class="text-muted">Database Uptime</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="text-center">
+              <h3 class="text-warning">{{ systemStatus.database.size }}</h3>
+              <p class="text-muted">Database Size</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

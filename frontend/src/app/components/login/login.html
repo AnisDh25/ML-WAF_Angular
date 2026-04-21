@@ -1,0 +1,82 @@
+<div class="login-container">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card login-card">
+        <div class="card-header login-header">
+          <h4 class="mb-0">
+            <i class="fas fa-shield-alt me-2"></i>
+            ML-WAF Login
+          </h4>
+        </div>
+        <div class="card-body login-body">
+          <form (ngSubmit)="onSubmit()">
+            <!-- Error Message -->
+            <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              {{ errorMessage }}
+            </div>
+
+            <!-- Username Field -->
+            <div class="form-group">
+              <label for="username" class="form-label">
+                <i class="fas fa-user me-1"></i>
+                Username
+              </label>
+              <div class="input-icon">
+                <i class="fas fa-user"></i>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  name="username"
+                  [(ngModel)]="username"
+                  required
+                  placeholder="Enter your username"
+                  [disabled]="isLoading"
+                />
+              </div>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+              <label for="password" class="form-label">
+                <i class="fas fa-lock me-1"></i>
+                Password
+              </label>
+              <div class="input-icon">
+                <i class="fas fa-lock"></i>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  name="password"
+                  [(ngModel)]="password"
+                  required
+                  placeholder="Enter your password"
+                  [disabled]="isLoading"
+                />
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="btn btn-login"
+              [disabled]="isLoading || !username || !password"
+            >
+              <span *ngIf="isLoading" class="loading-spinner"></span>
+              <i *ngIf="!isLoading" class="fas fa-sign-in-alt me-2"></i>
+              {{ isLoading ? 'Logging in...' : 'Login' }}
+            </button>
+          </form>
+        </div>
+        <div class="card-footer login-footer">
+          <small>
+            <i class="fas fa-info-circle me-1"></i>
+            Machine Learning Web Application Firewall
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

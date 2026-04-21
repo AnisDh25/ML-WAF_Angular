@@ -1,0 +1,128 @@
+<nav class="sidebar" [class.collapsed]="isCollapsed">
+  <div class="sidebar-header">
+    <div class="logo-container">
+      <i class="fas fa-shield-alt logo-icon"></i>
+      <span class="logo-text" *ngIf="!isCollapsed">ML-WAF</span>
+    </div>
+    <button class="toggle-btn" (click)="toggleSidebar()">
+      <i class="fas" [class.fa-bars]="!isCollapsed" [class.fa-times]="isCollapsed"></i>
+    </button>
+  </div>
+
+  <div class="sidebar-content">
+    <!-- User Info -->
+    <div class="user-info" *ngIf="currentUser && !isCollapsed">
+      <div class="user-avatar">
+        <i class="fas fa-user-circle"></i>
+      </div>
+      <div class="user-details">
+        <div class="username">{{ currentUser.username }}</div>
+        <div class="user-role">{{ currentUser.role }}</div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <ul class="nav-menu">
+      <!-- Dashboard -->
+      <li class="nav-item">
+        <a class="nav-link" 
+           [class.active]="isActive('/dashboard')" 
+           (click)="navigateTo('/dashboard')"
+           title="Dashboard">
+          <i class="fas fa-tachometer-alt nav-icon"></i>
+          <span class="nav-text" *ngIf="!isCollapsed">Dashboard</span>
+        </a>
+      </li>
+
+      <!-- Logs Exporter -->
+      <li class="nav-item">
+        <a class="nav-link" 
+           [class.active]="isActive('/logs')" 
+           (click)="navigateTo('/logs')"
+           title="Logs Exporter">
+          <i class="fas fa-file-export nav-icon"></i>
+          <span class="nav-text" *ngIf="!isCollapsed">Logs Exporter</span>
+        </a>
+      </li>
+
+      <!-- ML Monitor -->
+      <li class="nav-item">
+        <a class="nav-link" 
+           [class.active]="isActive('/ml-monitor')" 
+           (click)="navigateTo('/ml-monitor')"
+           title="ML Monitor">
+          <i class="fas fa-brain nav-icon"></i>
+          <span class="nav-text" *ngIf="!isCollapsed">ML Monitor</span>
+        </a>
+      </li>
+
+      <!-- WAF Settings -->
+      <li class="nav-item">
+        <a class="nav-link" 
+           [class.active]="isActive('/waf-settings')" 
+           (click)="navigateTo('/waf-settings')"
+           title="WAF Settings">
+          <i class="fas fa-cog nav-icon"></i>
+          <span class="nav-text" *ngIf="!isCollapsed">WAF Settings</span>
+        </a>
+      </li>
+
+      <!-- User Management (Admin Only) -->
+      <li class="nav-item" *ngIf="isAdmin">
+        <a class="nav-link" 
+           [class.active]="isActive('/user-management')" 
+           (click)="navigateTo('/user-management')"
+           title="User Management">
+          <i class="fas fa-users nav-icon"></i>
+          <span class="nav-text" *ngIf="!isCollapsed">User Management</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Divider -->
+    <div class="nav-divider" *ngIf="!isCollapsed"></div>
+
+    <!-- System Section -->
+    <ul class="nav-menu">
+      <!-- System Status -->
+      <li class="nav-item">
+        <a class="nav-link" 
+           [class.active]="isActive('/system-status')" 
+           (click)="navigateTo('/system-status')"
+           title="System Status">
+          <i class="fas fa-server nav-icon"></i>
+          <span class="nav-text" *ngIf="!isCollapsed">System Status</span>
+        </a>
+      </li>
+
+      <!-- Profile -->
+      <li class="nav-item">
+        <a class="nav-link" 
+           [class.active]="isActive('/profile')" 
+           (click)="navigateTo('/profile')"
+           title="Profile">
+          <i class="fas fa-user nav-icon"></i>
+          <span class="nav-text" *ngIf="!isCollapsed">Profile</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Footer -->
+  <div class="sidebar-footer">
+    <div class="footer-actions" *ngIf="!isCollapsed">
+      <button class="btn btn-sm btn-outline-light logout-btn" (click)="logout()">
+        <i class="fas fa-sign-out-alt me-2"></i>
+        Logout
+      </button>
+    </div>
+    <div class="footer-actions" *ngIf="isCollapsed">
+      <button class="btn btn-sm btn-outline-light logout-btn" (click)="logout()" title="Logout">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Overlay for mobile -->
+<div class="sidebar-overlay" *ngIf="!isCollapsed" (click)="toggleSidebar()"></div>

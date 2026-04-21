@@ -1,0 +1,148 @@
+<div class="user-management">
+  <div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2><i class="fas fa-users me-2"></i>User Management</h2>
+      <p class="text-muted">Manage system users and permissions</p>
+      <div class="d-flex align-items-center gap-2 mt-1">
+        <small class="text-muted">
+          <i class="fas fa-clock me-1"></i>
+          Last sync: <span class="fw-semibold">{{ getSyncStatusText() }}</span>
+        </small>
+        <div class="spinner-border spinner-border-sm text-success" 
+             *ngIf="isSyncing" 
+             title="Syncing...">
+          <span class="visually-hidden">Syncing...</span>
+        </div>
+        <i class="fas fa-check-circle text-success" 
+           *ngIf="!isSyncing && lastSyncTime" 
+           title="Data synchronized"></i>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" (click)="refreshUsers()" title="Refresh users">
+        <i class="fas fa-sync-alt me-1"></i>Refresh
+      </button>
+      <button class="btn btn-primary" (click)="openAddUserModal()">
+        <i class="fas fa-plus me-2"></i>Add User
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading users...</p>
+      </div>
+      
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && users.length === 0" class="text-center py-4">
+        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No Users Found</h5>
+        <p class="text-muted">There are no users in the system yet.</p>
+        <button class="btn btn-primary" (click)="openAddUserModal()">
+          <i class="fas fa-plus me-2"></i>Add First User
+        </button>
+      </div>
+      
+      <!-- Users Table -->
+      <div *ngIf="!isLoading && users.length > 0">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of users">
+              <td>
+                <div class="d-flex align-items-center">
+                  <i class="fas fa-user-circle me-2"></i>
+                  {{ user.username }}
+                </div>
+              </td>
+              <td>{{ user.email }}</td>
+              <td>
+                <span class="badge" [class]="'bg-' + getRoleBadgeClass(user.role)">
+                  {{ user.role }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [class]="'bg-' + (user.isActive ? 'success' : 'secondary')">
+                  {{ user.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                {{ user.lastLogin ? (user.lastLogin | date:'short') : 'Never' }}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <button class="btn btn-outline-primary" (click)="editUser(user)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-outline-secondary" (click)="toggleUserStatus(user.id)">
+                    <i class="fas" [class.fa-toggle-on]="user.isActive" [class.fa-toggle-off]="!user.isActive"></i>
+                  </button>
+                  <button class="btn btn-outline-danger" (click)="deleteUser(user.id)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div class="modal fade show d-block" *ngIf="showAddUserModal" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New User</h5>
+          <button type="button" class="btn-close" (click)="closeAddUserModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" [(ngModel)]="newUser.username">
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" [(ngModel)]="newUser.email">
+          </div>
+          <div class="mb-3">
+            <label for="role" class="form-label">Role</label>
+            <select class="form-select" id="role" [(ngModel)]="newUser.role">
+              <option value="responsible-it">Responsible IT</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" [(ngModel)]="newUser.password">
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="confirmPassword" [(ngModel)]="newUser.confirmPassword">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddUserModal()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="addUser()">Add User</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

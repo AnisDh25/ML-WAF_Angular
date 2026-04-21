@@ -1,0 +1,214 @@
+<div class="profile">
+  <div class="page-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2><i class="fas fa-user me-2"></i>Profile</h2>
+      <p class="text-muted">Manage your account settings and preferences</p>
+      <div class="d-flex align-items-center gap-2 mt-1">
+        <small class="text-muted">
+          <i class="fas fa-sync me-1"></i>
+          Last sync: <span class="fw-semibold">{{ getSyncStatusText() }}</span>
+        </small>
+        <div class="spinner-border spinner-border-sm text-success" 
+             *ngIf="isSyncing" 
+             title="Syncing...">
+          <span class="visually-hidden">Syncing...</span>
+        </div>
+        <i class="fas fa-check-circle text-success" 
+           *ngIf="!isSyncing && lastSyncTime" 
+           title="Data synchronized"></i>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" (click)="refreshProfile()" title="Refresh profile">
+        <i class="fas fa-sync-alt me-1"></i>Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Loading profile...</p>
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!isLoading && currentUser" class="profile-content">
+    <div class="row">
+      <!-- Profile Overview -->
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-body text-center">
+            <img [src]="currentUser.avatar" 
+                 [alt]="currentUser.username" 
+                 class="rounded-circle mb-3"
+                 style="width: 120px; height: 120px; object-fit: cover;">
+            <h4 class="card-title">{{ currentUser.username }}</h4>
+            <p class="text-muted">{{ currentUser.email }}</p>
+            <span class="badge" [class]="'bg-' + getRoleBadgeClass(currentUser.role)">
+              {{ currentUser.role }}
+            </span>
+            <div class="mt-3">
+              <small class="text-muted d-block">
+                <i class="fas fa-calendar me-1"></i>
+                Member since {{ formatDate(currentUser.createdAt) }}
+              </small>
+              <small class="text-muted d-block">
+                <i class="fas fa-clock me-1"></i>
+                Last login {{ formatDateFromNow(currentUser.lastLogin) }}
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Statistics -->
+        <div class="card mt-3">
+          <div class="card-header">
+            <h6 class="card-title mb-0">
+              <i class="fas fa-chart-bar me-2"></i>User Statistics
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="row text-center">
+              <div class="col-6">
+                <h4 class="text-primary">{{ userStats.totalLogins }}</h4>
+                <small class="text-muted">Total Logins</small>
+              </div>
+              <div class="col-6">
+                <h4 class="text-info">{{ userStats.passwordChanges }}</h4>
+                <small class="text-muted">Password Changes</small>
+              </div>
+            </div>
+            <div class="row text-center mt-3">
+              <div class="col-6">
+                <h4 class="text-success">{{ userStats.failedLogins }}</h4>
+                <small class="text-muted">Failed Logins</small>
+              </div>
+              <div class="col-6">
+                <h4 class="text-warning">{{ formatDateFromNow(userStats.accountCreated) }}</h4>
+                <small class="text-muted">Account Age</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Settings -->
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-user-edit me-2"></i>Profile Settings
+            </h5>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="updateProfile()">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="username" class="form-label">Username</label>
+                  <input type="text" class="form-control" id="username" name="username"
+                         [(ngModel)]="profileForm.username" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email" name="email"
+                         [(ngModel)]="profileForm.email" required>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-secondary me-2" (click)="refreshProfile()">
+                  <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+                  <i class="fas fa-save me-1"></i>
+                  <span *ngIf="!isLoading">Update Profile</span>
+                  <span *ngIf="isLoading">
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Saving...
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Password Change -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-key me-2"></i>Change Password
+            </h5>
+          </div>
+          <div class="card-body">
+            <form (ngSubmit)="changePassword()">
+              <div class="mb-3">
+                <label for="currentPassword" class="form-label">Current Password</label>
+                <input type="password" class="form-control" id="currentPassword" name="currentPassword"
+                       [(ngModel)]="profileForm.currentPassword" required>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="newPassword" class="form-label">New Password</label>
+                  <input type="password" class="form-control" id="newPassword" name="newPassword"
+                         [(ngModel)]="profileForm.newPassword" required minlength="6">
+                  <small class="form-text text-muted">Minimum 6 characters</small>
+                </div>
+                <div class="col-md-6">
+                  <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                  <input type="password" class="form-control" id="confirmPassword" name="confirmPassword"
+                         [(ngModel)]="profileForm.confirmPassword" required minlength="6">
+                </div>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-secondary me-2" (click)="profileForm.currentPassword = ''; profileForm.newPassword = ''; profileForm.confirmPassword = '';">
+                  <i class="fas fa-times me-1"></i>Clear
+                </button>
+                <button type="submit" class="btn btn-warning" [disabled]="isLoading">
+                  <i class="fas fa-key me-1"></i>
+                  <span *ngIf="!isLoading">Change Password</span>
+                  <span *ngIf="isLoading">
+                    <span class="spinner-border spinner-border-sm me-1"></span>
+                    Changing...
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card mt-4">
+          <div class="card-header">
+            <h5 class="card-title mb-0">
+              <i class="fas fa-history me-2"></i>Recent Activity
+            </h5>
+          </div>
+          <div class="card-body">
+            <div class="activity-list">
+              <div class="activity-item" *ngFor="let activity of recentActivity">
+                <div class="d-flex align-items-start">
+                  <div class="activity-icon me-3">
+                    <i class="fas" [class]="getActivityIcon(activity.action)"></i>
+                  </div>
+                  <div class="activity-content flex-grow-1">
+                    <div class="activity-header">
+                      <strong>{{ activity.action }}</strong>
+                      <small class="text-muted ms-2">{{ formatDateFromNow(activity.timestamp) }}</small>
+                    </div>
+                    <div class="activity-details text-muted">
+                      {{ activity.details }}
+                    </div>
+                  </div>
+                  <div class="activity-time text-muted">
+                    <small>{{ formatDate(activity.timestamp) }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
