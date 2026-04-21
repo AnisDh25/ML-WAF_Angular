@@ -21,11 +21,6 @@ This document outlines the development sprints for the ML-WAF (Machine Learning 
 - ✅ System status monitoring
 - ✅ Attack logging and analysis
 
-### **Features Excluded:**
-- ❌ Content filtering system
-- ❌ Popup detection/blocking
-- ❌ Flask UI dashboard (replaced by Angular)
-
 ---
 
 ## 🏃 Sprint 1: Foundation & Core Infrastructure
